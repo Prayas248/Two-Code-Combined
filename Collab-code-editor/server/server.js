@@ -4,6 +4,8 @@ const { Server } = require('socket.io')
 const cors = require("cors")
 const simplePeer = require('simple-peer') // Assuming simple-peer library for video conferencing
 
+const app = express(); // Initialize the app variable using express
+
 app.use(cors())
 
 const server = http.createServer(app)
@@ -18,6 +20,7 @@ const io = new Server(server, {
 app.get('/', function (req, res) {
   res.send('Hello from the server!')
 })
+
 const users = {};
 
 const socketToRoom = {};
@@ -144,28 +147,28 @@ io.on('connection', function (socket) {
     const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
     socket.emit("all users", usersInThisRoom);
-});
+  });
 
-socket.on("sending signal", payload => {
+  socket.on("sending signal", payload => {
     io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
-});
+  });
 
-socket.on("returning signal", payload => {
+  socket.on("returning signal", payload => {
     io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
-});
+  });
 
-socket.on('disconnect', () => {
+  socket.on('disconnect', () => {
     const roomID = socketToRoom[socket.id];
     let room = users[roomID];
     if (room) {
         room = room.filter(id => id !== socket.id);
         users[roomID] = room;
     }
-});
+  });
 });
 
-//you can store your port number in a dotenv file, fetch it from there and store it in PORT
-//we have hard coded the port number here just for convenience
+// you can store your port number in a dotenv file, fetch it from there and store it in PORT
+// we have hard coded the port number here just for convenience
 const PORT = process.env.PORT || 5000
 
 server.listen(PORT, function () {
