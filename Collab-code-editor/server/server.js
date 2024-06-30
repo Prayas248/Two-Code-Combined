@@ -2,7 +2,6 @@ const express = require('express')
 const http = require('http')
 const { Server } = require('socket.io')
 const cors = require("cors")
-const simplePeer = require('simple-peer') // Assuming simple-peer library for video conferencing
 
 const app = express(); // Initialize the app variable using express
 

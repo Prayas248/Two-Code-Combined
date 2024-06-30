@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AceEditor from "react-ace";
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate, useParams } from "react-router-dom";
+import { Box } from "@chakra-ui/react";
 import { generateColor } from "../../utils";
+import Output from "./Output";
 import './Room.css'
 import RoomGet from "../Video/Vi";
 
@@ -24,6 +26,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 
 export default function Room({ socket }) {
+  const editorRef = useRef(null);
   const navigate = useNavigate()
   const { roomId } = useParams()
   const [fetchedUsers, setFetchedUsers] = useState(() => [])
@@ -33,7 +36,23 @@ export default function Room({ socket }) {
 
   const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"]
   const codeKeybindingsAvailable = ["default", "emacs", "vim"]
-
+  const LANGUAGE_VERSIONS = {
+    javascript: "18.15.0",
+    typescript: "5.0.3",
+    python: "3.10.0",
+    java: "15.0.2",
+    csharp: "6.12.0",
+    php: "8.2.3",
+    cpp:"10.2.0",
+    c:"10.2.0",
+    dart:"2.19.6",
+    bash:"5.2.0",
+    swift:"5.3.3",
+    rust:"1.68.2",
+    ruby:"3.0.1",
+    go:"1.16.2",
+  };
+  const languages = Object.entries(LANGUAGE_VERSIONS);
   function onChange(newValue) {
     setFetchedCode(newValue)
     socket.emit("update code", { roomId, code: newValue })
@@ -63,7 +82,7 @@ export default function Room({ socket }) {
       console.error(exp)
     }
   }
-
+ 
   useEffect(() => {
     socket.on("updating client list", ({ userslist }) => {
       setFetchedUsers(userslist)
@@ -96,15 +115,15 @@ export default function Room({ socket }) {
       window.removeEventListener("popstate", backButtonEventListner)
     }
   }, [socket])
-
+  
   return (<>
     <div className="room">
       <div className="roomSidebar">
         <div className="roomSidebarUsersWrapper">
           <div className="languageFieldWrapper">
             <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
-              {languagesAvailable.map(eachLanguage => (
-                <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
+              {languages.map(([lang, version]) => (
+                <option key={lang} value={lang}>{lang+ " "}{version}</option>
               ))}
             </select>
           </div>
@@ -135,6 +154,7 @@ export default function Room({ socket }) {
       </div>
 
       <AceEditor
+      ref={editorRef}
         placeholder="Write your code here."
         className="roomCodeEditor"
         mode={language}
@@ -158,9 +178,14 @@ export default function Room({ socket }) {
           $blockScrolling: true
         }}
       />
+      
+      <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
+      <Output editorRef={fetchedCode} language={language} />
+      </Box>
       <Toaster />
       
     </div>
+    
     <RoomGet />
     </>
   )
