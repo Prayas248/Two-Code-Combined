@@ -5,8 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
 import { generateColor } from "../../utils";
 import Output from "./Output";
-import './Room.css'
 import RoomGet from "../Video/Vi";
+import './Room.css'
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-typescript";
@@ -34,6 +34,9 @@ export default function Room({ socket }) {
   const [language, setLanguage] = useState(() => "javascript")
   const [codeKeybinding, setCodeKeybinding] = useState(() => undefined)
 
+  const [message, setMessage] = useState("");
+  const [messageReceived, setMessageReceived] = useState([]);
+
   const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"]
   const codeKeybindingsAvailable = ["default", "emacs", "vim"]
   const LANGUAGE_VERSIONS = {
@@ -43,16 +46,23 @@ export default function Room({ socket }) {
     java: "15.0.2",
     csharp: "6.12.0",
     php: "8.2.3",
-    cpp:"10.2.0",
-    c:"10.2.0",
-    dart:"2.19.6",
-    bash:"5.2.0",
-    swift:"5.3.3",
-    rust:"1.68.2",
-    ruby:"3.0.1",
-    go:"1.16.2",
+    cpp: "10.2.0",
+    c: "10.2.0",
+    dart: "2.19.6",
+    bash: "5.2.0",
+    swift: "5.3.3",
+    rust: "1.68.2",
+    ruby: "3.0.1",
+    go: "1.16.2",
   };
   const languages = Object.entries(LANGUAGE_VERSIONS);
+
+  const sendMessage = () => {
+    console.log("SS--", roomId, message)
+    socket.emit("send_message", { message, roomId });
+  };
+
+
   function onChange(newValue) {
     setFetchedCode(newValue)
     socket.emit("update code", { roomId, code: newValue })
@@ -82,7 +92,7 @@ export default function Room({ socket }) {
       console.error(exp)
     }
   }
- 
+
   useEffect(() => {
     socket.on("updating client list", ({ userslist }) => {
       setFetchedUsers(userslist)
@@ -104,6 +114,16 @@ export default function Room({ socket }) {
       toast(`${username} left`)
     })
 
+    socket.on("receive_message", (message) => {
+      console.log("OSFSEFPES");
+      setMessageReceived((prevMessages) => {
+        const hasDuplicate = prevMessages.some((prevMsg) => prevMsg.messageId === message.messageId);
+        return hasDuplicate ? [...prevMessages] : [...prevMessages, message];
+      });
+    });
+
+
+
     const backButtonEventListner = window.addEventListener("popstate", function (e) {
       const eventStateObj = e.state
       if (!('usr' in eventStateObj) || !('username' in eventStateObj.usr)) {
@@ -115,7 +135,7 @@ export default function Room({ socket }) {
       window.removeEventListener("popstate", backButtonEventListner)
     }
   }, [socket])
-  
+
   return (<>
     <div className="room">
       <div className="roomSidebar">
@@ -123,7 +143,7 @@ export default function Room({ socket }) {
           <div className="languageFieldWrapper">
             <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
               {languages.map(([lang, version]) => (
-                <option key={lang} value={lang}>{lang+ " "}{version}</option>
+                <option key={lang} value={lang}>{lang + " "}{version}</option>
               ))}
             </select>
           </div>
@@ -135,7 +155,7 @@ export default function Room({ socket }) {
               ))}
             </select>
           </div>
-              
+
           <p>Connected Users:</p>
           <div className="roomSidebarUsers">
             {fetchedUsers.map((each) => (
@@ -154,7 +174,7 @@ export default function Room({ socket }) {
       </div>
 
       <AceEditor
-      ref={editorRef}
+        ref={editorRef}
         placeholder="Write your code here."
         className="roomCodeEditor"
         mode={language}
@@ -178,15 +198,28 @@ export default function Room({ socket }) {
           $blockScrolling: true
         }}
       />
-      
+
       <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
-      <Output editorRef={fetchedCode} language={language} />
+        <Output editorRef={fetchedCode} language={language} />
       </Box>
+      <input
+        placeholder="Message..."
+        onChange={(event) => {
+          setMessage(event.target.value);
+        }}
+      />
+      <button onClick={sendMessage}> Send Message</button>
+      <h1> Message:</h1>
+      <div>
+        {messageReceived.map((message) => (
+          <p key={message.messageId}>{message.message}</p>
+        ))}
+      </div>
       <Toaster />
-      
+
     </div>
-    
+
     <RoomGet />
-    </>
+  </>
   )
 }

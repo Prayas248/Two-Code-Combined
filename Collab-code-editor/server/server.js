@@ -2,7 +2,7 @@ const express = require('express')
 const http = require('http')
 const { Server } = require('socket.io')
 const cors = require("cors")
-
+const { v4: uuidv4 } = require('uuid');
 const app = express(); // Initialize the app variable using express
 
 app.use(cors())
@@ -79,6 +79,15 @@ io.on('connection', function (socket) {
     })
   })
 
+
+  socket.on("send_message", ({ message, roomId }) => {
+    const messageId = uuidv4(); // Generate unique ID for each message
+    socket.to(roomId).emit("receive_message", { message, messageId });
+  });
+
+  
+  
+
   // for other users in room to view the changes
   socket.on("update language", ({ roomId, languageUsed }) => {
     if (roomId in roomID_to_Code_Map) {
@@ -126,9 +135,7 @@ io.on('connection', function (socket) {
   })
 
   // Whenever someone disconnects this piece of code executed
-  socket.on('disconnect', function () {
-    console.log('A user disconnected')
-  })
+  
 
   // **Video conferencing logic**
   socket.on("join room", roomID => {
