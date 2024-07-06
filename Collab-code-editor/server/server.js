@@ -80,9 +80,9 @@ io.on('connection', function (socket) {
   })
 
 
-  socket.on("send_message", ({ message, roomId }) => {
+  socket.on("send_message", ({ message, roomId, username }) => {
     const messageId = uuidv4(); // Generate unique ID for each message
-    socket.to(roomId).emit("receive_message", { message, messageId });
+    socket.to(roomId).emit("receive_message", { message, messageId, user:username });
   });
 
   

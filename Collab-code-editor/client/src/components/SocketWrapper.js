@@ -35,7 +35,7 @@ export default function SocketWrapper({ children }) {
         location.state && location.state.username ? socket.emit("when a user joins", { roomId, username: location.state.username }) : kickStrangerOut()
     }, [socket, location.state, roomId, navigate])
 
-    return location.state && location.state.username ? <div>{addPropsToChildren(children, { socket })}</div> : (
+    return location.state && location.state.username ? <div>{addPropsToChildren(children, { socket, username: location.state.username })}</div> : (
         <div className="room">
             <h2>No username provided. Please use the form to join a room.</h2>
         </div>

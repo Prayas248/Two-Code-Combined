@@ -24,8 +24,9 @@ import "ace-builds/src-noconflict/keybinding-vim";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
+import ChatUI from "./ChatUI";
 
-export default function Room({ socket }) {
+export default function Room({ socket , username }) {
   const editorRef = useRef(null);
   const navigate = useNavigate()
   const { roomId } = useParams()
@@ -33,9 +34,6 @@ export default function Room({ socket }) {
   const [fetchedCode, setFetchedCode] = useState(() => "")
   const [language, setLanguage] = useState(() => "javascript")
   const [codeKeybinding, setCodeKeybinding] = useState(() => undefined)
-
-  const [message, setMessage] = useState("");
-  const [messageReceived, setMessageReceived] = useState([]);
 
   const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"]
   const codeKeybindingsAvailable = ["default", "emacs", "vim"]
@@ -57,10 +55,6 @@ export default function Room({ socket }) {
   };
   const languages = Object.entries(LANGUAGE_VERSIONS);
 
-  const sendMessage = () => {
-    console.log("SS--", roomId, message)
-    socket.emit("send_message", { message, roomId });
-  };
 
 
   function onChange(newValue) {
@@ -114,14 +108,7 @@ export default function Room({ socket }) {
       toast(`${username} left`)
     })
 
-    socket.on("receive_message", (message) => {
-      console.log("OSFSEFPES");
-      setMessageReceived((prevMessages) => {
-        const hasDuplicate = prevMessages.some((prevMsg) => prevMsg.messageId === message.messageId);
-        return hasDuplicate ? [...prevMessages] : [...prevMessages, message];
-      });
-    });
-
+    console.log("This is which user", username);
 
 
     const backButtonEventListner = window.addEventListener("popstate", function (e) {
@@ -202,21 +189,9 @@ export default function Room({ socket }) {
       <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
         <Output editorRef={fetchedCode} language={language} />
       </Box>
-      <input
-        placeholder="Message..."
-        onChange={(event) => {
-          setMessage(event.target.value);
-        }}
-      />
-      <button onClick={sendMessage}> Send Message</button>
-      <h1> Message:</h1>
-      <div>
-        {messageReceived.map((message) => (
-          <p key={message.messageId}>{message.message}</p>
-        ))}
-      </div>
+      
       <Toaster />
-
+      <ChatUI socket={socket} roomId={roomId} username={username} />
     </div>
 
     <RoomGet />

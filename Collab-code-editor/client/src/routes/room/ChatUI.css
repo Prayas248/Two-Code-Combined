@@ -1,0 +1,58 @@
+.chat-area {
+    display: flex; /* Arrange input and messages side-by-side */
+    flex-direction: column; /* Stack input on top of messages */
+    height: 100vh;
+    margin: 0 auto; /* Center horizontally */
+    border: 1px solid #ddd; /* Add a border */
+    border-radius: 5px; /* Add rounded corners */
+    padding: 1rem; /* Add some padding */
+    background-color: #eee; /* Set a light background color */
+  }
+  
+  .chat-input-container {
+    display: flex; /* Arrange input and button horizontally */
+    width: 100%; /* Take up full width */
+    margin-bottom: 1rem; /* Add some space below */
+  }
+  
+  .chat-input {
+    flex: 1; /* Make input field take up most space */
+    padding: 0.5rem; /* Add padding */
+    border: 1px solid #ccc; /* Add a border */
+    border-radius: 3px; /* Add rounded corners */
+    font-size: 16px; /* Set font size */
+    outline: none; /* Remove default button outline */
+  }
+  
+  .send-button {
+    padding: 0.5rem 1rem; /* Add padding */
+    border: none; /* Remove default button border */
+    border-radius: 3px; /* Add rounded corners */
+    background-color: #4CAF50; /* Green button color */
+    color: white; /* White text color */
+    font-size: 16px; /* Set font size */
+    cursor: pointer; /* Make it look clickable */
+  }
+  
+  .chat-messages {
+    flex: 1; /* Make messages take up remaining space */
+    overflow-y: scroll; /* Enable scrolling for long message lists */
+    padding: 0.5rem; /* Add padding */
+    padding-bottom: 2rem;
+  }
+  
+  h1 {
+    margin: 0.5rem 0; /* Add some space around the heading */
+    font-size: 18px; /* Set font size */
+    font-weight: bold; /* Make it bold */
+  }
+  
+  .username {
+    color: #3f51b5; /* Blue color for usernames */
+  }
+  
+  p {
+    margin: 0.2rem 0; /* Add some space between messages */
+    font-size: 16px; /* Set font size */
+  }
+  
