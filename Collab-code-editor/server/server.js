@@ -82,11 +82,11 @@ io.on('connection', function (socket) {
 
   socket.on("send_message", ({ message, roomId, username }) => {
     const messageId = uuidv4(); // Generate unique ID for each message
-    socket.to(roomId).emit("receive_message", { message, messageId, user:username });
+    socket.to(roomId).emit("receive_message", { message, messageId, user: username });
   });
 
-  
-  
+
+
 
   // for other users in room to view the changes
   socket.on("update language", ({ roomId, languageUsed }) => {
@@ -134,20 +134,26 @@ io.on('connection', function (socket) {
     })
   })
 
+
+  socket.on('canvasImage', (data) => {
+    console.log("jiji",data.roomId);
+    socket.to(data.roomId).emit('canvasImage', data);
+  });
+
   // Whenever someone disconnects this piece of code executed
-  
+
 
   // **Video conferencing logic**
   socket.on("join room", roomID => {
     if (users[roomID]) {
-        const length = users[roomID].length;
-        if (length === 4) {
-            socket.emit("room full");
-            return;
-        }
-        users[roomID].push(socket.id);
+      const length = users[roomID].length;
+      if (length === 4) {
+        socket.emit("room full");
+        return;
+      }
+      users[roomID].push(socket.id);
     } else {
-        users[roomID] = [socket.id];
+      users[roomID] = [socket.id];
     }
     socketToRoom[socket.id] = roomID;
     const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
@@ -167,8 +173,8 @@ io.on('connection', function (socket) {
     const roomID = socketToRoom[socket.id];
     let room = users[roomID];
     if (room) {
-        room = room.filter(id => id !== socket.id);
-        users[roomID] = room;
+      room = room.filter(id => id !== socket.id);
+      users[roomID] = room;
     }
   });
 });

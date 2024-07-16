@@ -25,6 +25,7 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 import ChatUI from "./ChatUI";
+import Container from "../WhiteBoard/Container";
 
 export default function Room({ socket , username }) {
   const editorRef = useRef(null);
@@ -193,7 +194,7 @@ export default function Room({ socket , username }) {
       <Toaster />
       <ChatUI socket={socket} roomId={roomId} username={username} />
     </div>
-
+    <Container roomId={roomId} socket={socket}/>
     <RoomGet />
   </>
   )
