@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './Container.css'
+import { CloseIcon } from '@chakra-ui/icons'
 import Board from './board.jsx';
 
 function Container({roomId,socket}) {
@@ -7,14 +8,15 @@ function Container({roomId,socket}) {
   const [brushSize, setBrushSize] = useState(5);
   const [clearCanvas, setClearCanvas] = useState(false);
 
+
+
   return (
     <>
     <div className="App" >
-   
-      <h1>Collaborative Whiteboard</h1>
+      <h1>Whiteboard</h1>
       <div>
       <Board brushColor={brushColor} brushSize={brushSize} clearCanvas={clearCanvas} setClearCanvas={setClearCanvas} roomId={roomId} socket={socket}/>
-        <div className='tools' >
+        <div className='tools'>
           <div>
             <span>Color: </span>
             <input type="color" value={brushColor} onChange={(e) => setBrushColor(e.target.value)} />

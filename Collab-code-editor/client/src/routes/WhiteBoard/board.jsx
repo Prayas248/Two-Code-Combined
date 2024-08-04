@@ -153,8 +153,8 @@ const Board = (props) => {
     return (
         <canvas
             ref={canvasRef}
-            width={windowSize[0] > 600 ? 600 : 300}
-            height={windowSize[1] > 400 ? 400 : 200}
+            width={windowSize[0] > 600 ? 1650 : 300}
+            height={windowSize[1] > 400 ? 630  : 200}
             style={{ backgroundColor: 'white' }}
         />
     );

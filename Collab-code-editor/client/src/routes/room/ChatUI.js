@@ -1,8 +1,9 @@
 import React from 'react';
 import { useEffect, useState,useRef } from 'react';
+import { CloseIcon } from '@chakra-ui/icons'
 import "./ChatUI.css"
 
-const ChatUI = ({ socket, roomId, username }) => {
+const ChatUI = ({  socket, roomId, username }) => {
   const [message, setMessage] = useState('');
   const [messageReceived, setMessageReceived] = useState([]);
 
@@ -15,7 +16,7 @@ const ChatUI = ({ socket, roomId, username }) => {
   };
   const sendMessage = () => {
     const mess = {
-      messageId: '', // Placeholder, server likely generates ID
+      messageId: '', 
       message,
       user: 'You',
     };
@@ -38,12 +39,12 @@ const ChatUI = ({ socket, roomId, username }) => {
     scrollToBottom();
     });
   }, [socket]);
+  
 
   return (
     <div className="chat-area">
-      
       <div className="chat-messages" ref={messagesContainerRef}>
-        <h1>Messages</h1>
+          <h1>Messages</h1>
         {messageReceived.map((message) => (
           <p key={message.messageId || Math.random().toString(36)}>
             <span className="username">{message.user} :</span> {message.message}

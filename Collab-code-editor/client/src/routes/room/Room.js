@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import AceEditor from "react-ace";
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "@chakra-ui/react";
+import { Box, Slide } from "@chakra-ui/react";
+import { ArrowLeftIcon, ArrowRightIcon, ArrowUpDownIcon } from "@chakra-ui/icons";
 import { generateColor } from "../../utils";
 import Output from "./Output";
 import RoomGet from "../Video/Vi";
@@ -27,16 +28,34 @@ import "ace-builds/src-noconflict/ext-searchbox";
 import ChatUI from "./ChatUI";
 import Container from "../WhiteBoard/Container";
 
-export default function Room({ socket , username }) {
+export default function Room({ socket, username }) {
   const editorRef = useRef(null);
-  const navigate = useNavigate()
-  const { roomId } = useParams()
+  const navigate = useNavigate();
+  const { roomId } = useParams();
   const [fetchedUsers, setFetchedUsers] = useState(() => [])
   const [fetchedCode, setFetchedCode] = useState(() => "")
   const [language, setLanguage] = useState(() => "javascript")
   const [codeKeybinding, setCodeKeybinding] = useState(() => undefined)
+  const [isShown, setIsShown] = useState({
+    leftPanel: false,
+    rightPanel: false,
+    middlePanel: false,
+  });
 
-  const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"]
+
+
+
+  const toggleLeftPanel = () => {
+    setIsShown({ ...isShown, leftPanel: !isShown.leftPanel });
+  };
+
+  const toggleRightPanel = () => {
+    setIsShown({ ...isShown, rightPanel: !isShown.rightPanel });
+  };
+  const toggleMiddlePanel = () => {
+    setIsShown({ ...isShown, middlePanel: !isShown.middlePanel });
+  };
+
   const codeKeybindingsAvailable = ["default", "emacs", "vim"]
   const LANGUAGE_VERSIONS = {
     javascript: "18.15.0",
@@ -55,6 +74,8 @@ export default function Room({ socket , username }) {
     go: "1.16.2",
   };
   const languages = Object.entries(LANGUAGE_VERSIONS);
+
+
 
 
 
@@ -161,6 +182,7 @@ export default function Room({ socket , username }) {
         }}>Leave</button>
       </div>
 
+
       <AceEditor
         ref={editorRef}
         placeholder="Write your code here."
@@ -187,15 +209,39 @@ export default function Room({ socket , username }) {
         }}
       />
 
-      <Box minH="100vh" bg="#0f0a19" color="gray.500" px={6} py={8}>
+      <Box minH="auto" bg="#0f0a19" color="gray.500" px={6} py={8} style={{ overflow: "hidden" }}>
         <Output editorRef={fetchedCode} language={language} />
+        <Slide direction='bottom' in={isShown.leftPanel} style={{ zIndex: 10, width: '100%', height: '100vh' }}>
+
+
+          <Container roomId={roomId} socket={socket} />
+        </Slide>
+        <Slide direction='right' in={isShown.rightPanel} style={{ zIndex: 11, width: '35%', height: '100vh' }}>
+
+          <ChatUI socket={socket} roomId={roomId} username={username} />
+
+
+
+        </Slide>
+        <Slide direction='left' in={isShown.middlePanel} style={{ zIndex: 11, width: '100vw', height: '100vh' }}>
+
+
+          <RoomGet />
+        </Slide>
+
+
       </Box>
-      
-      <Toaster />
-      <ChatUI socket={socket} roomId={roomId} username={username} />
     </div>
-    <Container roomId={roomId} socket={socket}/>
-    <RoomGet />
+    <Box cursor="pointer" display="flex" zIndex={90} position="fixed" bottom="0" left="0" width="100%">
+      <Box display="flex" alignItems="center" justifyContent="center" bg="gray.600" color="white" style={{ width: "35%" }} onClick={toggleMiddlePanel}>Conference{isShown.middlePanel === true ? <ArrowLeftIcon marginLeft="5px" /> : <ArrowRightIcon marginLeft="5px" />} </Box>
+      <Box display="flex" alignItems="center" justifyContent="center" bg="gray.800" color="white" style={{ width: "30%" }} onClick={toggleLeftPanel}>WhiteBoard <ArrowUpDownIcon marginLeft="5px" /></Box>
+      <Box display="flex" alignItems="center" justifyContent="center" bg="gray.600" color="white" style={{ width: "35%" }} onClick={toggleRightPanel}>{isShown.rightPanel === true ? <ArrowRightIcon marginRight="5px" /> : <ArrowLeftIcon marginRight="5px" />}Chat </Box>
+    </Box>
+
+
+
+    <Toaster />
+
   </>
   )
 }

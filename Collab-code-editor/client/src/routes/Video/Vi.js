@@ -8,9 +8,10 @@ const Container = styled.div`
     padding: 20px;
     display: flex;
     height: 100vh;
-    width: 90%;
+    width: 100%;
     margin: auto;
     flex-wrap: wrap;
+    background-color:grey;
 `;
 
 const StyledVideo = styled.video`

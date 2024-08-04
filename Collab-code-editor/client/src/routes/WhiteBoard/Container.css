@@ -1,6 +1,6 @@
 .App {
   background-color: #4158D0;
-  background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+  background-image: linear-gradient(43deg, #0029f7cc 0%, #00fa9aa2 46%, #00fff2b9 100%);
   height: 100vh;
   width: 100%;
   padding: 3em 1em;
@@ -25,6 +25,7 @@
 h1 {
   margin-bottom: 1rem;
   text-align: center;
+  font-size: 1.4rem;
 }
 
 
