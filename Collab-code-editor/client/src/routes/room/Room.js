@@ -226,7 +226,7 @@ export default function Room({ socket, username }) {
         <Slide direction='left' in={isShown.middlePanel} style={{ zIndex: 11, width: '100vw', height: '100vh' }}>
 
 
-          <RoomGet />
+          <RoomGet socket={socket}/>
         </Slide>
 
 

@@ -11,7 +11,7 @@ const Container = styled.div`
     width: 100%;
     margin: auto;
     flex-wrap: wrap;
-    background-color:grey;
+    background-color: grey;
 `;
 
 const StyledVideo = styled.video`
@@ -25,22 +25,44 @@ const Video = (props) => {
     useEffect(() => {
         props.peer.on("stream", stream => {
             ref.current.srcObject = stream;
-        })
-    }, []);
+        });
+    }, [props.peer]);
 
     return (
         <StyledVideo playsInline autoPlay ref={ref} />
     );
-}
+};
 
+const StyledSelect = styled.select`
+    padding: 10px;
+    margin: 20px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+    outline: none;
+
+    &:focus {
+        border-color: #aaa;
+    }
+
+    option {
+        padding: 10px;
+        background-color: #fff;
+        color: #333;
+    }
+`;
 
 const videoConstraints = {
     height: window.innerHeight / 2,
     width: window.innerWidth / 2
 };
 
-const RoomGet = (props) => {
+const RoomGet = ({ socket }) => {
     const [peers, setPeers] = useState([]);
+    const [devices, setDevices] = useState([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState("");
     const socketRef = useRef();
     const userVideo = useRef();
     const peersRef = useRef([]);
@@ -48,40 +70,56 @@ const RoomGet = (props) => {
     const roomID = params.roomID;
 
     useEffect(() => {
-        socketRef.current = io.connect("/");
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
-            userVideo.current.srcObject = stream;
-            socketRef.current.emit("join room", roomID);
-            socketRef.current.on("all users", users => {
-                const peers = [];
-                users.forEach(userID => {
-                    const peer = createPeer(userID, socketRef.current.id, stream);
+        socketRef.current = socket;
+
+        navigator.mediaDevices.enumerateDevices().then(deviceInfos => {
+            const videoDevices = deviceInfos.filter(device => device.kind === 'videoinput');
+            setDevices(videoDevices);
+            if (videoDevices.length > 0) {
+                setSelectedDeviceId(videoDevices[0].deviceId);
+            }
+        });
+    }, [socket]);
+
+    useEffect(() => {
+        if (selectedDeviceId) {
+            navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: selectedDeviceId } },
+                audio: true
+            }).then(stream => {
+                userVideo.current.srcObject = stream;
+                socketRef.current.emit("join room", roomID);
+                socketRef.current.on("all users", users => {
+                    const peers = [];
+                    users.forEach(userID => {
+                        const peer = createPeer(userID, socketRef.current.id, stream);
+                        peersRef.current.push({
+                            peerID: userID,
+                            peer,
+                        });
+                        peers.push(peer);
+                    });
+                    setPeers(peers);
+                });
+
+                socketRef.current.on("user joined", payload => {
+                    const peer = addPeer(payload.signal, payload.callerID, stream);
                     peersRef.current.push({
-                        peerID: userID,
+                        peerID: payload.callerID,
                         peer,
-                    })
-                    peers.push(peer);
-                })
-                setPeers(peers);
-            })
+                    });
+                    setPeers(users => [...users, peer]);
+                });
 
-            socketRef.current.on("user joined", payload => {
-                const peer = addPeer(payload.signal, payload.callerID, stream);
-                peersRef.current.push({
-                    peerID: payload.callerID,
-                    peer,
-                })
-
-                setPeers(users => [...users, peer]);
+                socketRef.current.on("receiving returned signal", payload => {
+                    const item = peersRef.current.find(p => p.peerID === payload.id);
+                    item.peer.signal(payload.signal);
+                });
+            }).catch(error => {
+                console.error('Error accessing media devices.', error);
             });
-
-            socketRef.current.on("receiving returned signal", payload => {
-                const item = peersRef.current.find(p => p.peerID === payload.id);
-                item.peer.signal(payload.signal);
-            });
-        })
-        console.log(navigator.permissions.query({ name: 'camera' }))
-    }, []);
+        }
+    }, [selectedDeviceId, roomID]);
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
@@ -91,8 +129,8 @@ const RoomGet = (props) => {
         });
 
         peer.on("signal", signal => {
-            socketRef.current.emit("sending signal", { userToSignal, callerID, signal })
-        })
+            socketRef.current.emit("sending signal", { userToSignal, callerID, signal });
+        });
 
         return peer;
     }
@@ -102,11 +140,11 @@ const RoomGet = (props) => {
             initiator: false,
             trickle: false,
             stream,
-        })
+        });
 
         peer.on("signal", signal => {
-            socketRef.current.emit("returning signal", { signal, callerID })
-        })
+            socketRef.current.emit("returning signal", { signal, callerID });
+        });
 
         peer.signal(incomingSignal);
 
@@ -115,6 +153,13 @@ const RoomGet = (props) => {
 
     return (
         <Container>
+            <StyledSelect onChange={(e) => setSelectedDeviceId(e.target.value)} value={selectedDeviceId}>
+                {devices.map(device => (
+                    <option key={device.deviceId} value={device.deviceId}>
+                        {device.label || `Camera ${device.deviceId}`}
+                    </option>
+                ))}
+            </StyledSelect>
             <StyledVideo muted ref={userVideo} autoPlay playsInline />
             {peers.map((peer, index) => {
                 return (

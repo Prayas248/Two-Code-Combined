@@ -1,0 +1,13 @@
+.wrapper {
+    padding: 2px 6px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.selectors {
+    padding: 6px 10px;
+    background-color: #f0f0f0;
+    border: none;
+    outline: none;
+    text-transform: capitalize;
+}
