@@ -176,6 +176,8 @@ io.on('connection', function (socket) {
       room = room.filter(id => id !== socket.id);
       users[roomID] = room;
     }
+    // Emit user disconnected event
+    socket.broadcast.emit('user left', socket.id);
   });
 });
 
