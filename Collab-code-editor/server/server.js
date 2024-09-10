@@ -144,11 +144,11 @@ io.on('connection', function (socket) {
 
 
   // **Video conferencing logic**
-  socket.on("join room", roomID => {
+  socket.on('join room', (roomID) => {
     if (users[roomID]) {
       const length = users[roomID].length;
       if (length === 4) {
-        socket.emit("room full");
+        socket.emit('room full');
         return;
       }
       users[roomID].push(socket.id);
@@ -156,29 +156,32 @@ io.on('connection', function (socket) {
       users[roomID] = [socket.id];
     }
     socketToRoom[socket.id] = roomID;
-    const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
-    socket.emit("all users", usersInThisRoom);
+    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+    socket.emit('all users', usersInThisRoom);
   });
 
-  socket.on("sending signal", payload => {
+  // Sending signal to new user
+  socket.on('sending signal', (payload) => {
     io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
   });
 
-  socket.on("returning signal", payload => {
+  // Receiving the returned signal from other users
+  socket.on('returning signal', (payload) => {
     io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
   });
 
+  // When a user disconnects
   socket.on('disconnect', () => {
     const roomID = socketToRoom[socket.id];
     let room = users[roomID];
     if (room) {
-      room = room.filter(id => id !== socket.id);
+      room = room.filter((id) => id !== socket.id);
       users[roomID] = room;
     }
-    // Emit user disconnected event
     socket.broadcast.emit('user left', socket.id);
   });
+
 });
 
 // you can store your port number in a dotenv file, fetch it from there and store it in PORT
